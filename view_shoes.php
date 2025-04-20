@@ -4,9 +4,21 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-?>
-<?php
+
 require_once 'config/database.php';
+
+// Handle Delete
+if(isset($_POST['delete'])) {
+    try {
+        $id = $_POST['shoe_id']; // Get the ID as string
+        $result = $collection->deleteOne(['_id' => new MongoDB\BSON\ObjectID($id)]);
+        if($result->getDeletedCount() > 0) {
+            $success = "Shoe deleted successfully!";
+        }
+    } catch(Exception $e) {
+        $error = "Error deleting shoe: " . $e->getMessage();
+    }
+}
 
 try {
     $shoes = $collection->find([], ['sort' => ['created_at' => -1]]);
@@ -22,6 +34,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Shoes - Shoe Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         .header {
             background-color: #f8f9fa;
@@ -43,26 +56,23 @@ try {
             height: 100%;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <h1 class="text-center">Shoe Management System</h1>
-            <nav class="mt-3">
-                <ul class="nav justify-content-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="add_shoe.php">Add New Shoe</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="view_shoes.php">View All Shoes</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
+    <?php include 'includes/header.php'; ?>
 
     <div class="container">
+        <?php if (isset($success)): ?>
+            <div class="alert alert-success"><?php echo $success; ?></div>
+        <?php endif; ?>
+        
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?php echo $error; ?></div>
         <?php else: ?>
@@ -82,6 +92,22 @@ try {
                                     <strong>Color:</strong> <?php echo htmlspecialchars($shoe->color); ?>
                                 </p>
                                 <p class="card-text"><?php echo htmlspecialchars($shoe->description); ?></p>
+                                
+                                <div class="action-buttons">
+                                    <a href="edit_shoe.php?id=<?php echo $shoe->_id; ?>" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    
+                                    <form method="POST" action="view_shoes.php" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete this shoe?');">
+                                        <input type="hidden" name="shoe_id" value="<?php echo $shoe->_id; ?>">
+                                        <button type="submit" name="delete" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
