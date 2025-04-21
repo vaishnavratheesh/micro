@@ -1,17 +1,14 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-require_once 'config/database.php';
+require_once '../includes/auth.php';
+requireAdmin();
+require_once '../config/database.php';
 
 // Handle Delete
 if(isset($_POST['delete'])) {
     try {
-        $id = $_POST['shoe_id']; // Get the ID as string
-        $result = $collection->deleteOne(['_id' => new MongoDB\BSON\ObjectID($id)]);
+        $id = $_POST['shoe_id'];
+        $result = $collection->deleteOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
         if($result->getDeletedCount() > 0) {
             $success = "Shoe deleted successfully!";
         }
@@ -32,21 +29,12 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Shoes - Shoe Management System</title>
+    <title>Manage Shoes - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
-        .header {
-            background-color: #f8f9fa;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
         .shoe-card {
-            transition: transform 0.3s;
             margin-bottom: 20px;
-        }
-        .shoe-card:hover {
-            transform: translateY(-5px);
         }
         .shoe-image {
             height: 200px;
@@ -66,9 +54,14 @@ try {
     </style>
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    <?php include '../includes/header.php'; ?>
 
-    <div class="container">
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Manage Shoes</h2>
+            <a href="add_shoe.php" class="btn btn-primary">Add New Shoe</a>
+        </div>
+
         <?php if (isset($success)): ?>
             <div class="alert alert-success"><?php echo $success; ?></div>
         <?php endif; ?>
@@ -80,7 +73,7 @@ try {
                 <?php foreach ($shoes as $shoe): ?>
                     <div class="col-md-4 shoe-card">
                         <div class="card">
-                            <img src="<?php echo htmlspecialchars($shoe->image_path); ?>" 
+                            <img src="<?php echo '../' . htmlspecialchars($shoe->image_path); ?>" 
                                  class="card-img-top shoe-image" 
                                  alt="<?php echo htmlspecialchars($shoe->name); ?>">
                             <div class="card-body">
@@ -93,23 +86,21 @@ try {
                                 </p>
                                 <p class="card-text"><?php echo htmlspecialchars($shoe->description); ?></p>
                                 
-                                <?php if (isAdmin()): ?>
-                                    <div class="action-buttons">
-                                        <a href="edit_shoe.php?id=<?php echo $shoe->_id; ?>" 
-                                           class="btn btn-primary">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a>
-                                        
-                                        <form method="POST" action="view_shoes.php" 
-                                              style="display: inline;" 
-                                              onsubmit="return confirm('Are you sure you want to delete this shoe?');">
-                                            <input type="hidden" name="shoe_id" value="<?php echo $shoe->_id; ?>">
-                                            <button type="submit" name="delete" class="btn btn-danger">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="action-buttons">
+                                    <a href="edit_shoe.php?id=<?php echo $shoe->_id; ?>" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    
+                                    <form method="POST" action="view_shoes.php" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete this shoe?');">
+                                        <input type="hidden" name="shoe_id" value="<?php echo $shoe->_id; ?>">
+                                        <button type="submit" name="delete" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1,70 +1,70 @@
+<?php
+session_start();
+require_once 'config/database.php';
+
+try {
+    $shoes = $collection->find();
+} catch (Exception $e) {
+    $error = "Error: " . $e->getMessage();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Shoe Management System</title>
+    <title>Home - Shoe Store</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1460353581641-37baddab0fa2?ixlib=rb-1.2.1');
-            background-size: cover;
-            background-position: center;
-            height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-        }
-        .feature-card {
+        .shoe-card {
             transition: transform 0.3s;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
-        .feature-card:hover {
-            transform: translateY(-10px);
+        .shoe-card:hover {
+            transform: translateY(-5px);
+        }
+        .shoe-image {
+            height: 200px;
+            object-fit: cover;
+        }
+        .card {
+            height: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
 
-    <div class="hero">
-        <div class="container">
-            <h1 class="display-3">Welcome to Shoe Management System</h1>
-            <p class="lead">Manage your shoe inventory with ease</p>
-            <a href="register.php" class="btn btn-primary btn-lg me-3">Register Now</a>
-            <a href="login.php" class="btn btn-outline-light btn-lg">Login</a>
-        </div>
-    </div>
-
-    <div class="container my-5">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <h3>Add Shoes</h3>
-                        <p>Easily add new shoes to your inventory with detailed information.</p>
+    <div class="container mt-4">
+        <h2 class="mb-4">Welcome to Shoe Store</h2>
+        
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger"><?php echo $error; ?></div>
+        <?php else: ?>
+            <div class="row">
+                <?php foreach ($shoes as $shoe): ?>
+                    <div class="col-md-4 shoe-card">
+                        <div class="card">
+                            <img src="<?php echo htmlspecialchars($shoe->image_path); ?>" 
+                                 class="card-img-top shoe-image" 
+                                 alt="<?php echo htmlspecialchars($shoe->name); ?>">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo htmlspecialchars($shoe->name); ?></h5>
+                                <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($shoe->brand); ?></h6>
+                                <p class="card-text">
+                                    <strong>Price:</strong> $<?php echo number_format($shoe->price, 2); ?><br>
+                                    <strong>Size:</strong> <?php echo htmlspecialchars($shoe->size); ?><br>
+                                    <strong>Color:</strong> <?php echo htmlspecialchars($shoe->color); ?>
+                                </p>
+                                <p class="card-text"><?php echo htmlspecialchars($shoe->description); ?></p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endforeach; ?>
             </div>
-            <div class="col-md-4">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <h3>View Collection</h3>
-                        <p>Browse through your shoe collection with our organized display system.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card feature-card">
-                    <div class="card-body text-center">
-                        <h3>Manage Inventory</h3>
-                        <p>Keep track of your shoe inventory efficiently and securely.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

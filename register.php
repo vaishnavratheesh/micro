@@ -18,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 'username' => $username,
                 'email' => $email,
                 'password' => $password,
+                'role' => 'user',
                 'created_at' => time()
             ]);
 

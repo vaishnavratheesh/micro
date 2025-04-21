@@ -12,7 +12,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($user && password_verify($password, $user->password)) {
             $_SESSION['user_id'] = (string)$user->_id;
             $_SESSION['username'] = $user->username;
-            header("Location: add_shoe.php");
+            $_SESSION['role'] = $user->role;
+            
+            if ($user->role === 'admin') {
+                header("Location: admin/dashboard.php");
+            } else {
+                header("Location: index.php");
+            }
             exit();
         } else {
             $error = "Invalid email or password!";

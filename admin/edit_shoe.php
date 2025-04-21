@@ -1,11 +1,8 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-require_once 'config/database.php';
+require_once '../includes/auth.php';
+requireAdmin();
+require_once '../config/database.php';
 
 // Check if ID is provided
 if(!isset($_GET['id'])) {
@@ -15,7 +12,7 @@ if(!isset($_GET['id'])) {
 
 // Get shoe data
 try {
-    $id = $_GET['id']; // Get the ID as string
+    $id = $_GET['id'];
     $shoe = $collection->findOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
     if(!$shoe) {
         header("Location: view_shoes.php");
@@ -33,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Handle file upload if new image is provided
         $image_path = $_POST['existing_image'];
         if(isset($_FILES["image"]) && $_FILES["image"]["error"] == 0) {
-            $target_dir = "uploads/";
+            $target_dir = "../uploads/";
             // Create uploads directory if it doesn't exist
             if (!file_exists($target_dir)) {
                 mkdir($target_dir, 0777, true);
@@ -46,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $target_file = $target_dir . $file_name;
                 
                 if(move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                    $image_path = $target_file;
+                    $image_path = 'uploads/' . $file_name;  // Store relative path in database
                     // Delete old image if it exists and is not the default image
                     if(file_exists($_POST['existing_image']) && $_POST['existing_image'] != 'uploads/default.jpg') {
                         unlink($_POST['existing_image']);
@@ -107,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <?php include 'includes/header.php'; ?>
+    <?php include '../includes/header.php'; ?>
 
     <div class="container">
         <div class="form-container">
@@ -118,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
 
             <?php if (isset($shoe)): ?>
-                <form method="POST" action="edit_shoe.php?id=<?php echo $id; ?>" enctype="multipart/form-data">
+                <form method="POST" action="<?php echo $_SERVER['PHP_SELF'] . '?id=' . $id; ?>" enctype="multipart/form-data">
                     <input type="hidden" name="shoe_id" value="<?php echo $id; ?>">
                     <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($shoe->image_path); ?>">
 
@@ -161,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <?php if($shoe->image_path): ?>
                             <div>
                                 <p>Current Image:</p>
-                                <img src="<?php echo htmlspecialchars($shoe->image_path); ?>" 
+                                <img src="<?php echo '../' . htmlspecialchars($shoe->image_path); ?>" 
                                      class="current-image" alt="Current shoe image">
                             </div>
                         <?php endif; ?>
